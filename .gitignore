@@ -4,6 +4,8 @@ frontend/dist/
 
 # Backend
 
+# Test coverage
+backend/coverage.out
 
 # Environment
 .env
