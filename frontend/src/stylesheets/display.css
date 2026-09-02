@@ -1,0 +1,23 @@
+/* Styles for the calculator display */
+.display {
+    min-height: 140px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 24px;
+    box-sizing: border-box;
+    background: var(--surface-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.display-value {
+    width: 100%;
+    overflow: hidden;
+    font-size: 3rem;
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+}

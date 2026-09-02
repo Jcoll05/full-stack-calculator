@@ -1,0 +1,86 @@
+/* Styles for the calculator keypad */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 16px;
+}
+
+.keypad-button {
+    min-height: 64px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        border-color 0.15s ease;
+}
+
+.keypad-button:active {
+    transform: scale(0.96);
+}
+
+/* Number buttons */
+.keypad-button--number {
+    background: var(--button-number);
+}
+
+.keypad-button--number:hover {
+    background: var(--button-number-hover);
+}
+
+/* Action buttons */
+.keypad-button--action {
+    background: var(--button-action);
+    color: var(--text-muted);
+}
+
+.keypad-button--action:hover {
+    background: var(--button-action-hover);
+    color: var(--text);
+}
+
+/* Clear / reset button */
+.keypad-button--clear {
+    background: #2d2022;
+    color: #ff6b6b;
+}
+
+.keypad-button--clear:hover {
+    background: #3a2528;
+}
+
+/* Backspace button */
+.keypad-button--backspace {
+    background: var(--button-action);
+    border-color: var(--border);
+    color: #f0b35a;
+}
+
+.keypad-button--backspace:hover {
+    background: var(--button-action-hover);
+}
+
+/* Operator buttons */
+.keypad-button--operator {
+    background: var(--button-action);
+    border-color: var(--border);
+    color: var(--accent);
+}
+
+.keypad-button--operator:hover {
+    background: var(--button-action-hover);
+}
+
+/* Equals button */
+.keypad-button--equals {
+    background: var(--accent);
+    color: #ffffff;
+}
+
+.keypad-button--equals:hover {
+    background: var(--accent-hover);
+}
