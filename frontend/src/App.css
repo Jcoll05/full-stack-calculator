@@ -38,3 +38,15 @@
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.app-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
