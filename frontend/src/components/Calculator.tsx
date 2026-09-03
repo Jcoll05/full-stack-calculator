@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import '../stylesheets/calculator.css'
 import { calculate } from '../services/calculatorApi'
-import { evaluateExpression } from '../utils/expressionEvaluator'
-import type { CalculatorOperation } from '../types/calculator'
 import Display from './Display'
 import Keypad from './Keypad'
 
@@ -20,16 +18,10 @@ function Calculator() {
     const [displayValue, setDisplayValue] = useState('0')
     // Stores the current number being entered.
     const [currentValue, setCurrentValue] = useState('0')
-    // Stores the previous value and the current operation for calculations.
-    const [previousValue, setPreviousValue] = useState<number | null>(null)
-    // Stores the current operation selected by the user.
-    const [operation, setOperation] = useState<CalculatorOperation | null>(null)
     // Stores whether the next number should start a new operand.
     const [waitingForOperand, setWaitingForOperand] = useState(false)
-    // Stores the full expression being built for display purposes.
+    // Stores the full mathematical expression being built.
     const [expression, setExpression] = useState('')
-    // Stores whether the user is currently entering a parenthesized expression.
-    const [insideParentheses, setInsideParentheses] = useState(false)
 
     // Function to get the symbol for a given operator value.
     const getOperatorSymbol = (value: string) => {
@@ -49,6 +41,23 @@ function Calculator() {
         }
     }
 
+    // Function to check if there are any unmatched opening parentheses in the expression.
+    const hasOpenParentheses = (value: string) => {
+        let balance = 0
+
+        for (const character of value) {
+            if (character === '(') {
+                balance++
+            }
+
+            if (character === ')') {
+                balance--
+            }
+        }
+
+        return balance > 0
+    }
+
     // Handles input from the calculator buttons.
     const handleInput = async (value: string) => {
 
@@ -56,11 +65,8 @@ function Calculator() {
         if (value === 'clear') {
             setDisplayValue('0')
             setCurrentValue('0')
-            setPreviousValue(null)
-            setOperation(null)
             setWaitingForOperand(false)
             setExpression('')
-            setInsideParentheses(false)
             return
         }
 
@@ -84,11 +90,6 @@ function Calculator() {
             setExpression(nextExpression)
             setDisplayValue(nextExpression || '0')
 
-            // If the deleted character was a closing parenthesis,
-            // reopen the parenthesized expression.
-            if (expression.endsWith(')')) {
-                setInsideParentheses(true)
-            }
 
             // If the expression now ends with an operator,
             // the user is waiting for the next operand.
@@ -145,8 +146,6 @@ function Calculator() {
                     ? `${currentValue} ${getOperatorSymbol(value)}`
                     : `${expression} ${getOperatorSymbol(value)}`
 
-            setPreviousValue(Number(currentValue))
-            setOperation(value as CalculatorOperation)
             setExpression(nextExpression)
             setDisplayValue(nextExpression)
             setWaitingForOperand(true)
@@ -158,14 +157,14 @@ function Calculator() {
             if (expression === '') return
 
             try {
-                const result = evaluateExpression(expression)
+                const response = await calculate({
+                    expression,
+                })
 
-                setDisplayValue(String(result))
-                setCurrentValue(String(result))
-                setPreviousValue(null)
-                setOperation(null)
+                setDisplayValue(String(response.result))
+                setCurrentValue(String(response.result))
                 setWaitingForOperand(false)
-                setExpression(String(result))
+                setExpression(String(response.result))
             } catch (error) {
                 const message =
                     error instanceof Error
@@ -233,7 +232,8 @@ function Calculator() {
 
         // Handle percentage input
         if (value === 'percentage') {
-            const nextExpression = `${expression}%`
+            const nextExpression =
+                expression === '' ? '0%' : `${expression}%`
 
             setExpression(nextExpression)
             setDisplayValue(nextExpression)
@@ -243,44 +243,31 @@ function Calculator() {
 
         // Handle opening parenthesis
         if (value === '(') {
-            setExpression(`${expression}(`)
-            setDisplayValue(`${expression}(`)
-            setInsideParentheses(true)
+            const nextExpression = `${expression}(`
+
+            setExpression(nextExpression)
+            setDisplayValue(nextExpression)
             setCurrentValue('0')
-            setPreviousValue(null)
-            setOperation(null)
             setWaitingForOperand(false)
+
             return
         }
 
         // Handle closing parenthesis
         if (value === ')') {
-            if (
-                !insideParentheses ||
-                previousValue === null ||
-                operation === null
-            ) {
+            if (!hasOpenParentheses(expression)) {
                 return
             }
-
-            const response = await calculate({
-                operation,
-                a: previousValue,
-                b: Number(currentValue),
-            })
 
             const nextExpression = `${expression})`
 
             setExpression(nextExpression)
             setDisplayValue(nextExpression)
-            setCurrentValue(String(response.result))
-            setPreviousValue(null)
-            setOperation(null)
             setWaitingForOperand(false)
-            setInsideParentheses(false)
 
             return
         }
+
     }
 
 

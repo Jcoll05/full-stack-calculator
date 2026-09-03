@@ -20,7 +20,7 @@ func TestNewRouter(t *testing.T) {
 		request := httptest.NewRequest(
 			http.MethodPost,
 			"/api/v1/calculate",
-			strings.NewReader(`{"operation":"add","a":10,"b":5}`),
+			strings.NewReader(`{"expression":"10 + 5"}`),
 		)
 
 		recorder := httptest.NewRecorder() // Create a ResponseRecorder to capture the response.

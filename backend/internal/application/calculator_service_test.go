@@ -12,40 +12,32 @@ func TestCalculatorService_Calculate(t *testing.T) {
 	service := NewCalculatorService()
 
 	tests := []struct {
-		name      string
-		operation domain.Operation
-		a         float64
-		b         float64
-		want      float64
-		wantErr   error
+		name       string
+		expression string
+		want       float64
+		wantErr    error
 	}{
 		{
-			name:      "addition",
-			operation: domain.Add,
-			a:         10,
-			b:         5,
-			want:      15,
+			name:       "addition",
+			expression: "10 + 5",
+			want:       15,
 		},
 		{
-			name:      "division",
-			operation: domain.Divide,
-			a:         10,
-			b:         2,
-			want:      5,
+			name:       "division",
+			expression: "10 / 2",
+			want:       5,
 		},
 		{
-			name:      "division by zero",
-			operation: domain.Divide,
-			a:         10,
-			b:         0,
-			wantErr:   domain.ErrDivisionByZero,
+			name:       "division by zero",
+			expression: "10 / 0",
+			wantErr:    domain.ErrDivisionByZero,
 		},
 	}
 
 	// Run each test case
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.Calculate(tt.operation, tt.a, tt.b)
+			got, err := service.Calculate(tt.expression)
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("Calculate() error = %v, wantErr %v", err, tt.wantErr)

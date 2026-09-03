@@ -9,16 +9,17 @@ import (
 )
 
 // Calculator defines the calculation behavior required by the HTTP handler.
+// Implementations receive a complete mathematical expression and return its result.
 type Calculator interface {
-	Calculate(operation domain.Operation, a, b float64) (float64, error)
+	Calculate(expression string) (float64, error)
 }
 
-// CalculatorHandler handles HTTP requests for calculator operations.
+// CalculatorHandler handles HTTP requests for mathematical expression evaluation.
 type CalculatorHandler struct {
 	service Calculator
 }
 
-// NewCalculatorHandler creates a new instance of CalculatorHandler with the provided CalculatorService.
+// NewCalculatorHandler creates a new CalculatorHandler with the provided calculator service.
 func NewCalculatorHandler(service Calculator) *CalculatorHandler {
 	return &CalculatorHandler{
 		service: service,
@@ -27,9 +28,7 @@ func NewCalculatorHandler(service Calculator) *CalculatorHandler {
 
 // calculateRequest represents the expected JSON structure for a calculation request.
 type calculateRequest struct {
-	Operation string   `json:"operation"`
-	A         *float64 `json:"a"` // Use pointer (*) to distinguish between zero value and missing field.
-	B         *float64 `json:"b"`
+	Expression string `json:"expression"`
 }
 
 // calculateResponse represents the JSON structure for a successful calculation response.
@@ -42,10 +41,10 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
-// Calculate handles the HTTP request for performing a calculation.
+// Calculate handles HTTP requests for evaluating mathematical expressions.
 func (h *CalculatorHandler) Calculate(w http.ResponseWriter, r *http.Request) {
 
-	// Ensure the request method is POST; otherwise, return a 405 Method Not Allowed error.
+	// Reject unsupported HTTP methods.
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
@@ -60,52 +59,24 @@ func (h *CalculatorHandler) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate that an operation was provided.
-	if request.Operation == "" {
-		writeError(w, http.StatusBadRequest, "operation is required")
+	// Reject requests without an expression.
+	if request.Expression == "" {
+		writeError(w, http.StatusBadRequest, "expression is required")
 		return
 	}
 
-	// Validate that operand 'a' was provided.
-	if request.A == nil {
-		writeError(w, http.StatusBadRequest, "operand 'a' is required")
-		return
-	}
-
-	operation := domain.Operation(request.Operation)
-
-	// Binary operations require operand 'b'.
-	switch operation {
-	case domain.Add,
-		domain.Subtract,
-		domain.Multiply,
-		domain.Divide,
-		domain.Power:
-		if request.B == nil {
-			writeError(w, http.StatusBadRequest, "operand 'b' is required")
-			return
-		}
-	}
-
-	// Unary operations do not require operand 'b'.
-	var b float64
-	if request.B != nil {
-		b = *request.B
-	}
-
-	// Perform the calculation using the CalculatorService.
-	result, err := h.service.Calculate(
-		operation,
-		*request.A,
-		b,
-	)
+	// Evaluate the expression through the calculator service.
+	result, err := h.service.Calculate(request.Expression)
 
 	// Handle errors and send appropriate HTTP responses.
 	if err != nil {
 		switch {
-		case errors.Is(err, domain.ErrUnsupportedOperation),
-			errors.Is(err, domain.ErrDivisionByZero),
-			errors.Is(err, domain.ErrNegativeSquareRoot):
+		case errors.Is(err, domain.ErrDivisionByZero),
+			errors.Is(err, domain.ErrNegativeSquareRoot),
+			errors.Is(err, domain.ErrInvalidExpression),
+			errors.Is(err, domain.ErrMissingClosingParenthesis),
+			errors.Is(err, domain.ErrUnexpectedOperator),
+			errors.Is(err, domain.ErrInvalidNumber):
 			writeError(w, http.StatusBadRequest, err.Error())
 
 		default:
@@ -115,7 +86,7 @@ func (h *CalculatorHandler) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send a successful response with the calculation result.
+	// Return the calculated result.
 	writeJSON(w, http.StatusOK, calculateResponse{
 		Result: result,
 	})

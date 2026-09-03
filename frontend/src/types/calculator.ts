@@ -1,21 +1,11 @@
 // This file contains TypeScript types for the calculator application.
-export type CalculatorOperation =
-    | 'add'
-    | 'subtract'
-    | 'multiply'
-    | 'divide'
-    | 'power'
-    | 'sqrt'
-    | 'percentage'
 
-// Define the request structure for a calculation operation.
+// The types defined here are used for request and response payloads in the calculator API.
 export interface CalculateRequest {
-    operation: CalculatorOperation
-    a: number
-    b?: number
+    expression: string
 }
 
-// Define the response structure for a calculation operation.
+// The response from the calculator API contains the result of the evaluated expression.
 export interface CalculateResponse {
     result: number
 }

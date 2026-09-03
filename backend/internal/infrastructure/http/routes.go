@@ -10,5 +10,6 @@ func NewRouter(handler *CalculatorHandler) http.Handler {
 	// Register the Calculate handler for the /api/v1/calculate endpoint.
 	mux.HandleFunc("/api/v1/calculate", handler.Calculate)
 
-	return mux // Return the configured router to be used by the HTTP server.
+	// Wrap the router with CORS middleware.
+	return corsMiddleware(mux)
 }
