@@ -13,3 +13,14 @@
     background: var(--surface);
     box-shadow: var(--shadow);
 }
+
+@media (max-width: 480px) {
+    .calculator-container {
+        padding: 8px;
+    }
+
+    .calculator {
+        min-height: 0;
+        border-radius: 18px;
+    }
+}

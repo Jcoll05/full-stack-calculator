@@ -84,3 +84,14 @@
 .keypad-button--equals:hover {
     background: var(--accent-hover);
 }
+
+@media (max-width: 480px) {
+    .keypad {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .keypad-button {
+        min-height: 58px;
+    }
+}

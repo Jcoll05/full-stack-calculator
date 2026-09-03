@@ -12,12 +12,24 @@
 
 .display-value {
     width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     font-size: 3rem;
     font-weight: 600;
     line-height: 1.1;
     text-align: right;
-    text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text);
+    scrollbar-width: none;
+}
+
+.display-value::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .display {
+        min-height: 120px;
+        padding: 20px 16px;
+    }
 }
