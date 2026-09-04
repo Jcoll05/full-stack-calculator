@@ -528,7 +528,7 @@ go tool cover -html=coverage.out -o coverage.html
 
 The generated `coverage.html` file can be opened in a browser to inspect coverage line by line.
 
-The coverage profile and generated HTML report are build artifacts and do not need to be committed to the repository. The report can be regenerated at any time using the commands above.
+The generated coverage.html report is included in the repository as the backend coverage report. The temporary coverage.out profile does not need to be committed and can be regenerated using the commands above.
 
 ### Frontend
 
