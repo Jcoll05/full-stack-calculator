@@ -484,3 +484,5 @@ AI assistance was primarily used for:
 The final implementation was reviewed, tested, and validated manually by the developer.
 
 AI tooling was used as a development aid rather than as a replacement for understanding or verifying the implementation.
+
+A representative selection of the prompts used during development is available in [`AI_PROMPTS.md`](AI_PROMPTS.md).
