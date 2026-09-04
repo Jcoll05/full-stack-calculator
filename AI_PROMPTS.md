@@ -86,6 +86,37 @@ The `calculatorApi.ts` service, which contains a small amount of API-specific lo
 
 > Review the final repository structure and identify generated files, unnecessary dependencies, debugging artifacts, or other files that should not be committed.
 
+## Docker and Containerization
+
+> Review the assignment requirements and determine whether the optional Dockerfile should containerize the frontend and backend separately or provide a simple full-stack setup.
+
+> Design a simple Docker setup for the React/Vite frontend and Go backend that is appropriate for a take-home assignment without introducing unnecessary infrastructure or complexity.
+
+> Review the proposed backend Dockerfile and suggest a multi-stage build that compiles the Go application and runs the resulting binary in a lightweight production image.
+
+> Review the proposed frontend Dockerfile and suggest a multi-stage build that installs dependencies, creates the Vite production bundle, and serves the application using Nginx.
+
+> The frontend and backend run in separate Docker containers. How should Docker Compose connect them while allowing the React application to use the same `/api/v1` path in both local development and the containerized production setup?
+
+> Review the Nginx configuration and determine how it should serve the React production build while reverse-proxying `/api/v1/*` requests to the Go backend container through the Docker Compose network.
+
+> Review the Docker Compose configuration for the full-stack calculator and identify whether the service dependencies, port mappings, build arguments, and container networking are appropriate for the project.
+
+> Review the Docker setup for unnecessary files being included in the build context and suggest appropriate `.dockerignore` files for the frontend and backend.
+
+> Troubleshoot the Docker build and runtime configuration when the backend Go version required by `go.mod` differs from the Go version used by the Docker builder image.
+
+> Review the Dockerized application as a take-home assignment and identify whether the containerization approach is simple, reproducible, documented, and appropriate for the scope of the project.
+
+The final Docker setup uses separate multi-stage builds for the frontend and backend and Docker Compose to run them together.
+
+The Go backend is compiled in a Go builder image and executed from a lightweight Alpine runtime image. The React/Vite frontend is built with Node.js and served using Nginx.
+
+Nginx also acts as a reverse proxy for `/api/v1/*` requests, forwarding them to the backend container through the Docker Compose network. This allows the frontend to use a relative API path when containerized instead of depending on a host-specific backend address.
+
+Docker was intentionally kept as a simple optional deployment method rather than introducing additional infrastructure or orchestration complexity.
+
+
 ## Use of AI
 
 AI was used as a development aid throughout the project for architecture discussions, implementation approaches, edge-case analysis, testing strategy, coverage analysis, UI/UX refinement, troubleshooting, and documentation review.

@@ -1,7 +1,7 @@
 import type { CalculateRequest, CalculateResponse } from '../types/calculator' // Import the request and response types for calculator operations.
 
-// Define the base URL for the calculator API.
-const API_URL = 'http://localhost:8080/api/v1'
+// Define the base URL for the calculator API, using an environment variable if available, or defaulting to localhost.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 // Function to perform a calculation by sending a request to the backend API.
 export async function calculate(

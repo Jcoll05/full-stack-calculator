@@ -164,6 +164,187 @@ Make sure the following are installed:
 git clone https://github.com/Jcoll05/full-stack-calculator.git
 cd full-stack-calculator
 ```
+## Running with Docker
+
+The application can be run as a full-stack containerized setup using Docker Compose. This starts both the React frontend and Go backend together.
+
+### Prerequisites
+
+Install and start [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+Verify that Docker and Docker Compose are available:
+
+```bash
+docker --version
+docker compose version
+```
+
+### Start the application
+
+From the project root, run:
+
+```bash
+docker compose up --build
+```
+
+The `--build` flag ensures that the Docker images are built using the current source code and Docker configuration.
+
+On the first run, Docker may take several minutes while downloading the required base images and installing frontend dependencies.
+
+Once both containers are running, the application is available at:
+
+```text
+http://localhost:3000
+```
+
+### Ports
+
+| Service  | Container Port | Host Port | Purpose                                |
+| -------- | -------------: | --------: | -------------------------------------- |
+| Frontend |             80 |      3000 | React application served through Nginx |
+| Backend  |           8080 |      8080 | Go REST API                            |
+
+The frontend is accessed through port `3000` on the host machine.
+
+The backend is also exposed on port `8080`, which allows the API to be accessed directly for development and testing.
+
+The frontend itself does not communicate directly with `localhost:8080` when running in Docker. Instead, requests to `/api/v1/*` are handled by Nginx and proxied to the backend container through the Docker Compose network.
+
+### Docker Architecture
+
+```text
+                    Host Machine
+                         │
+                         │ http://localhost:3000
+                         ▼
+              ┌─────────────────────┐
+              │ Frontend Container  │
+              │                     │
+              │ React + Nginx       │
+              │ Port 80             │
+              └──────────┬──────────┘
+                         │
+                         │ /api/v1/*
+                         ▼
+              ┌─────────────────────┐
+              │ Backend Container   │
+              │                     │
+              │ Go REST API         │
+              │ Port 8080           │
+              └─────────────────────┘
+```
+
+### Stop the application
+
+If Docker Compose is running in the foreground, press:
+
+```text
+Ctrl + C
+```
+
+Then remove the containers and Docker network with:
+
+```bash
+docker compose down
+```
+
+### Start without rebuilding
+
+If the Docker images have already been built and no Docker configuration or source changes need to be included, the application can be started with:
+
+```bash
+docker compose up
+```
+
+### Rebuild after changes
+
+After modifying application code or Docker configuration, rebuild the images with:
+
+```bash
+docker compose up --build
+```
+
+To force a completely fresh image rebuild without using the Docker build cache:
+
+```bash
+docker compose build --no-cache
+docker compose up
+```
+
+### Run in the background
+
+To start the application without keeping the terminal attached to the container logs:
+
+```bash
+docker compose up --build -d
+```
+
+Check the running containers with:
+
+```bash
+docker compose ps
+```
+
+View the logs with:
+
+```bash
+docker compose logs
+```
+
+Or view logs for a specific service:
+
+```bash
+docker compose logs frontend
+docker compose logs backend
+```
+
+### Accessing the API directly
+
+When the Docker setup is running, the backend API is also available directly on the host at:
+
+```text
+http://localhost:8080/api/v1/calculate
+```
+
+For example:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/calculate \
+  -H "Content-Type: application/json" \
+  -d '{"expression":"8 * 2"}'
+```
+
+Expected response:
+
+```json
+{
+  "result": 16
+}
+```
+
+### Docker Files
+
+The Docker setup consists of:
+
+```text
+backend/
+├── Dockerfile
+└── .dockerignore
+
+frontend/
+├── Dockerfile
+├── .dockerignore
+└── nginx.conf
+
+docker-compose.yml
+```
+
+The backend uses a multi-stage Docker build to compile the Go application and run the resulting binary in a lightweight Alpine image.
+
+The frontend uses a multi-stage build to create the Vite production bundle and serve it using Nginx. Nginx also acts as a reverse proxy for backend API requests.
+
+Docker is provided as an optional way to run the complete application and does not replace the standard local development workflow described below.
+
 
 ## Running the Backend
 
