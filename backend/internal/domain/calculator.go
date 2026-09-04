@@ -19,10 +19,11 @@ var (
 	ErrInvalidNumber             = errors.New("invalid number")
 )
 
-// parsedValue represents a parsed value and whether it originated from a percentage.
+// parsedValue represents a parsed value and its parsing metadata.
 type parsedValue struct {
-	value        float64
-	isPercentage bool
+	value                        float64
+	isPercentage                 bool
+	allowsImplicitMultiplication bool
 }
 
 // EvaluateExpression evaluates a mathematical expression represented as a string.
@@ -144,7 +145,8 @@ func parseTerm(tokens *[]string) (parsedValue, error) {
 
 		// Implicit multiplication:
 		// 2(2 + 2) means 2 × (2 + 2).
-		if operator == "(" {
+		// (2 + 2)2 means (2 + 2) × 2.
+		if operator == "(" || (result.allowsImplicitMultiplication && isNumber(operator)) {
 			nextValue, err := parsePower(tokens)
 			if err != nil {
 				return parsedValue{}, err
@@ -152,6 +154,7 @@ func parseTerm(tokens *[]string) (parsedValue, error) {
 
 			result.value *= nextValue.value
 			result.isPercentage = false
+			result.allowsImplicitMultiplication = nextValue.allowsImplicitMultiplication
 
 			continue
 		}
@@ -237,8 +240,9 @@ func parseNumber(tokens *[]string) (parsedValue, error) {
 		}
 
 		return parsedValue{
-			value:        math.Sqrt(operand.value),
-			isPercentage: false,
+			value:                        math.Sqrt(operand.value),
+			isPercentage:                 false,
+			allowsImplicitMultiplication: true,
 		}, nil
 	}
 
@@ -267,6 +271,8 @@ func parseNumber(tokens *[]string) (parsedValue, error) {
 			}, nil
 		}
 
+		result.allowsImplicitMultiplication = true
+
 		return result, nil
 	}
 
@@ -291,6 +297,12 @@ func parseNumber(tokens *[]string) (parsedValue, error) {
 		value:        value,
 		isPercentage: false,
 	}, nil
+}
+
+// isNumber checks if a given token can be parsed as a number (float64).
+func isNumber(token string) bool {
+	_, err := strconv.ParseFloat(token, 64)
+	return err == nil
 }
 
 // consumeToken removes and returns the first token from the slice of tokens.

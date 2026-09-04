@@ -38,6 +38,31 @@ func TestEvaluateExpression(t *testing.T) {
 			expected:   8,
 		},
 		{
+			name:       "supports implicit multiplication after parentheses",
+			expression: "(2 + 2)2",
+			expected:   8,
+		},
+		{
+			name:       "supports implicit multiplication after and before parentheses",
+			expression: "2(2 + 2)2",
+			expected:   16,
+		},
+		{
+			name:       "supports zero after parentheses",
+			expression: "(5 + 5)0",
+			expected:   0,
+		},
+		{
+			name:       "supports implicit multiplication between parentheses",
+			expression: "(5 + 5)(2 + 2)",
+			expected:   40,
+		},
+		{
+			name:       "supports implicit multiplication after square root",
+			expression: "√(25)2",
+			expected:   10,
+		},
+		{
 			name:       "evaluates standalone percentages",
 			expression: "2%",
 			expected:   0.02,
@@ -289,6 +314,41 @@ func TestEvaluateExpressionInvalidExpressions(t *testing.T) {
 		{
 			name:       "invalid expression after square root",
 			expression: "√abc",
+			expected:   ErrInvalidNumber,
+		},
+		{
+			name:       "unexpected closing parenthesis between operands",
+			expression: "2)3",
+			expected:   ErrInvalidExpression,
+		},
+		{
+			name:       "unexpected whitespace between operands inside parentheses",
+			expression: "(2 3)",
+			expected:   ErrUnexpectedOperator,
+		},
+		{
+			name:       "missing closing parenthesis after implicit multiplication",
+			expression: "2(3",
+			expected:   ErrMissingClosingParenthesis,
+		},
+		{
+			name:       "unexpected closing parenthesis before expression",
+			expression: ")(2",
+			expected:   ErrInvalidNumber,
+		},
+		{
+			name:       "consecutive multiplication operators",
+			expression: "2**3",
+			expected:   ErrInvalidNumber,
+		},
+		{
+			name:       "consecutive multiplication and division operators",
+			expression: "2*/3",
+			expected:   ErrInvalidNumber,
+		},
+		{
+			name:       "empty parentheses",
+			expression: "()",
 			expected:   ErrInvalidNumber,
 		},
 	}

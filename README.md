@@ -312,20 +312,42 @@ Other validation cases include:
 
 ### Backend
 
-Run all backend tests:
+Run all backend unit tests:
 
 ```bash
 cd backend
 go test ./...
 ```
 
-Run tests with coverage:
+Run tests with a coverage summary:
 
 ```bash
 go test ./... -cover
 ```
 
-The core backend packages currently have full statement coverage.
+The backend packages currently have full statement coverage:
+
+| Package                        | Coverage |
+| ------------------------------ | -------: |
+| `internal/application`         |     100% |
+| `internal/domain`              |     100% |
+| `internal/infrastructure/http` |     100% |
+| `cmd/server`                   |       0% |
+
+The `cmd/server` package contains the application's entry point and dependency wiring. It is not directly unit tested because its responsibilities are limited to initializing the application components and starting the HTTP server. The underlying application, domain, and HTTP layers are tested independently.
+
+#### Detailed Coverage Report
+
+To generate an HTML coverage report:
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out -o coverage.html
+```
+
+The generated `coverage.html` file can be opened in a browser to inspect coverage line by line.
+
+The coverage profile and generated HTML report are build artifacts and do not need to be committed to the repository. The report can be regenerated at any time using the commands above.
 
 ### Frontend
 
@@ -337,16 +359,53 @@ npm test -- --run
 
 The frontend tests use Vitest, React Testing Library, and jsdom.
 
-The tests cover key calculator behavior including:
+The tests focus primarily on user-facing calculator behavior and the interaction between the calculator UI and the backend API. The current test suite covers:
 
-* Number input
-* Operator input
+* Number input and multi-digit values
+* Operator input, including addition, subtraction, multiplication, division, and exponentiation
 * Clearing calculator state
-* Backspace
-* Decimal input
+* Backspace behavior, including removing digits and operators
+* Backspace behavior when the calculator is empty
+* Decimal input and prevention of duplicate decimal points
+* Leading-zero handling
+* Square root input
+* Percentage input
+* Parentheses and expression construction
+* Protection against unmatched closing parentheses
 * Successful API-backed calculation
 * API error handling
 * API request construction and response handling
+* Fallback handling when the backend does not provide an error message
+
+To run the tests with coverage:
+
+```bash
+npm test -- --run --coverage
+```
+
+The current frontend test suite contains 19 tests across 2 test files:
+
+| Metric     | Coverage |
+| ---------- | -------: |
+| Statements |   94.07% |
+| Branches   |   84.00% |
+| Functions  |     100% |
+| Lines      |   94.77% |
+
+The `calculatorApi.ts` service has 100% coverage across statements, branches, functions, and lines.
+
+The calculator component itself has 94.11% statement coverage, 84.05% branch coverage, 100% function coverage, and 94.91% line coverage.
+
+#### Coverage approach
+
+The goal of the frontend tests is not to achieve 100% code coverage at the expense of meaningful tests. Coverage is used as an indicator to identify untested behavior and potential gaps, while the primary goal is to verify important user-facing functionality and application behavior.
+
+The remaining uncovered code in the calculator component consists primarily of defensive or low-value branches that would require tests for unusual internal states rather than meaningful user scenarios. Creating artificial interactions solely to execute those branches would add test complexity without providing proportional confidence in the application.
+
+For this reason, the test suite intentionally stops short of 100% coverage. The current coverage level provides strong confidence in the calculator's core behavior while keeping the tests focused, readable, and maintainable.
+
+The generated coverage report is written to the `coverage/` directory and is ignored by Git. It can be regenerated at any time using the coverage command above.
+
 
 ## Design Decisions
 

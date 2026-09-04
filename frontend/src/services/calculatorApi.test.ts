@@ -29,4 +29,42 @@ describe('calculatorApi', () => {
 
         expect(result).toEqual({ result: 16 })
     })
+
+    it('throws the backend error when the response is not ok', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue(
+                new Response(
+                    JSON.stringify({
+                        error: 'cannot divide by zero',
+                    }),
+                    { status: 400 },
+                ),
+            ),
+        )
+
+        await expect(
+            calculate({ expression: '8 ÷ 0' }),
+        ).rejects.toThrow('cannot divide by zero')
+
+        vi.unstubAllGlobals()
+    })
+
+    it('uses a fallback error when the backend provides no error message', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue(
+                new Response(
+                    JSON.stringify({}),
+                    { status: 400 },
+                ),
+            ),
+        )
+
+        await expect(
+            calculate({ expression: 'invalid' }),
+        ).rejects.toThrow('Calculation failed')
+
+        vi.unstubAllGlobals()
+    })
 })

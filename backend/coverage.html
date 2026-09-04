@@ -1,0 +1,625 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>server: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/Jcoll05/full-stack-calculator/backend/cmd/server/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/Jcoll05/full-stack-calculator/backend/internal/application/calculator_service.go (100.0%)</option>
+				
+				<option value="file2">github.com/Jcoll05/full-stack-calculator/backend/internal/domain/calculator.go (100.0%)</option>
+				
+				<option value="file3">github.com/Jcoll05/full-stack-calculator/backend/internal/infrastructure/http/handler.go (100.0%)</option>
+				
+				<option value="file4">github.com/Jcoll05/full-stack-calculator/backend/internal/infrastructure/http/middleware.go (100.0%)</option>
+				
+				<option value="file5">github.com/Jcoll05/full-stack-calculator/backend/internal/infrastructure/http/routes.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "log"
+        "net/http"
+
+        "github.com/Jcoll05/full-stack-calculator/backend/internal/application"
+        calculatorHTTP "github.com/Jcoll05/full-stack-calculator/backend/internal/infrastructure/http"
+)
+
+// main is the entry point of the calculator backend application.
+func main() {
+        // Initialize the application service.
+        <span class="cov0" title="0">service := application.NewCalculatorService()
+</span>
+        // Initialize the HTTP handler with the application service.
+        <span class="cov0" title="0">handler := calculatorHTTP.NewCalculatorHandler(service)
+</span>
+        // Initialize the HTTP router with the handler.
+        <span class="cov0" title="0">router := calculatorHTTP.NewRouter(handler)
+</span>
+        // Start the HTTP server.
+        <span class="cov0" title="0">const address = ":8080"
+</span>
+        <span class="cov0" title="0">log.Printf("Calculator backend listening on %s", address)
+</span>
+        // Start the HTTP server and log any errors that occur.
+        <span class="cov0" title="0">if err := http.ListenAndServe(address, router); err != nil </span>{
+                <span class="cov0" title="0">log.Fatalf("server failed: %v", err)
+</span>        }
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package application
+
+import "github.com/Jcoll05/full-stack-calculator/backend/internal/domain"
+
+// CalculatorService provides methods to evaluate mathematical expressions.
+type CalculatorService struct{}
+
+// NewCalculatorService creates a new instance of CalculatorService.
+func NewCalculatorService() *CalculatorService {
+        <span class="cov8" title="1">return &amp;CalculatorService{}
+</span>}
+
+// Calculate evaluates the provided mathematical expression using the domain layer.
+func (s *CalculatorService) Calculate(expression string) (float64, error) {
+        <span class="cov8" title="1">return domain.EvaluateExpression(expression)
+</span>}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package domain
+
+import (
+        "errors"
+        "math"
+        "strconv"
+        "strings"
+)
+
+// Validation errors
+var (
+        ErrUnsupportedOperation = errors.New("unsupported operation")
+        ErrDivisionByZero       = errors.New("cannot divide by zero")
+        ErrNegativeSquareRoot   = errors.New("cannot calculate square root of a negative number")
+
+        ErrInvalidExpression         = errors.New("invalid expression")
+        ErrMissingClosingParenthesis = errors.New("missing closing parenthesis")
+        ErrUnexpectedOperator        = errors.New("unexpected operator")
+        ErrInvalidNumber             = errors.New("invalid number")
+)
+
+// parsedValue represents a parsed value and its parsing metadata.
+type parsedValue struct {
+        value                        float64
+        isPercentage                 bool
+        allowsImplicitMultiplication bool
+}
+
+// EvaluateExpression evaluates a mathematical expression represented as a string.
+// It supports addition, subtraction, multiplication, division, exponentiation,
+// square root, and percentage operations. The function returns the result of
+// the evaluation or an error if the expression is invalid.
+func EvaluateExpression(expression string) (float64, error) {
+        <span class="cov8" title="1">tokens := tokenize(expression) // Tokenize the input expression into a slice of strings.
+</span>
+        // If there are no tokens, the expression is invalid.
+        <span class="cov8" title="1">if len(tokens) == 0 </span>{
+                <span class="cov8" title="1">return 0, ErrInvalidExpression
+</span>        }
+
+        <span class="cov8" title="1">result, err := parseExpression(&amp;tokens)
+</span>
+        <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">return 0, err
+</span>        }
+
+        // If there are leftover tokens after parsing, the expression is invalid.
+        <span class="cov8" title="1">if len(tokens) &gt; 0 </span>{
+                <span class="cov8" title="1">return 0, ErrInvalidExpression
+</span>        }
+
+        <span class="cov8" title="1">return result.value, nil</span>
+}
+
+// tokenize converts the raw mathematical expression into a sequence of tokens.
+// Each token represents a meaningful part of the expression, such as a number,
+// operator, parenthesis, square root, or percentage symbol. Separating the
+// expression into tokens allows the parser to process each element individually
+// and apply operator precedence and nested-expression rules without having to
+// interpret the entire string at once.
+func tokenize(expression string) []string {
+        <span class="cov8" title="1">expression = strings.ReplaceAll(expression, "×", "*")
+        expression = strings.ReplaceAll(expression, "÷", "/")
+        expression = strings.ReplaceAll(expression, "−", "-")
+        expression = strings.ReplaceAll(expression, "√", " √ ")
+        expression = strings.ReplaceAll(expression, "(", " ( ")
+        expression = strings.ReplaceAll(expression, ")", " ) ")
+        expression = strings.ReplaceAll(expression, "%", " % ")
+</span>
+        <span class="cov8" title="1">expression = strings.TrimSpace(expression)
+</span>
+        // If the expression is empty after trimming, return nil to indicate no tokens.
+        <span class="cov8" title="1">if expression == "" </span>{
+                <span class="cov8" title="1">return nil
+</span>        }
+
+        <span class="cov8" title="1">return strings.Fields(expression)</span>
+}
+
+// parseExpression parses the tokens and evaluates the expression according to operator precedence.
+func parseExpression(tokens *[]string) (parsedValue, error) {
+        <span class="cov8" title="1">result, err := parseTerm(tokens)
+        if err != nil </span>{
+                <span class="cov8" title="1">return parsedValue{}, err
+</span>        }
+
+        // Continue parsing while there are tokens left and the next token is not a closing parenthesis.
+        <span class="cov8" title="1">for len(*tokens) &gt; 0 </span>{
+                <span class="cov8" title="1">if (*tokens)[0] == ")" </span>{
+                        <span class="cov8" title="1">break</span>
+                }
+
+                <span class="cov8" title="1">operator := consumeToken(tokens) // Consume the next token as the operator.
+</span>
+                // If the operator is not addition or subtraction, return an unexpected operator error.
+                <span class="cov8" title="1">if operator != "+" &amp;&amp; operator != "-" </span>{
+                        <span class="cov8" title="1">return parsedValue{}, ErrUnexpectedOperator
+</span>                }
+
+                <span class="cov8" title="1">nextValue, err := parseTerm(tokens) // Parse the next term in the expression.
+</span>
+                <span class="cov8" title="1">if err != nil </span>{
+                        <span class="cov8" title="1">return parsedValue{}, err
+</span>                }
+
+                // Handle percentage calculations based on the current operator and the next value.
+                <span class="cov8" title="1">if nextValue.isPercentage </span>{
+                        <span class="cov8" title="1">percentageValue := result.value * nextValue.value
+</span>
+                        // If the next value is a percentage, calculate its effect on the current result based on the operator.
+                        <span class="cov8" title="1">if operator == "+" </span>{
+                                <span class="cov8" title="1">result.value += percentageValue
+</span>                        } else {
+                                <span class="cov8" title="1">result.value -= percentageValue
+</span>                        }
+
+                        <span class="cov8" title="1">result.isPercentage = false
+                        continue</span>
+                }
+
+                // Perform the addition or subtraction based on the operator.
+                <span class="cov8" title="1">if operator == "+" </span>{
+                        <span class="cov8" title="1">result.value += nextValue.value
+</span>                } else {
+                        <span class="cov8" title="1">result.value -= nextValue.value
+</span>                }
+
+                <span class="cov8" title="1">result.isPercentage = false</span>
+        }
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// parseTerm parses a term in the expression, handling multiplication and division.
+func parseTerm(tokens *[]string) (parsedValue, error) {
+        <span class="cov8" title="1">result, err := parsePower(tokens) // Parse the next power in the expression.
+</span>
+        <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">return parsedValue{}, err
+</span>        }
+
+        // Continue parsing while there are tokens left and the next token is a multiplication or division operator.
+        <span class="cov8" title="1">for len(*tokens) &gt; 0 </span>{
+                <span class="cov8" title="1">operator := (*tokens)[0]
+</span>
+                // Implicit multiplication:
+                // 2(2 + 2) means 2 × (2 + 2).
+                // (2 + 2)2 means (2 + 2) × 2.
+                <span class="cov8" title="1">if operator == "(" || (result.allowsImplicitMultiplication &amp;&amp; isNumber(operator)) </span>{
+                        <span class="cov8" title="1">nextValue, err := parsePower(tokens)
+                        if err != nil </span>{
+                                <span class="cov8" title="1">return parsedValue{}, err
+</span>                        }
+
+                        <span class="cov8" title="1">result.value *= nextValue.value
+                        result.isPercentage = false
+                        result.allowsImplicitMultiplication = nextValue.allowsImplicitMultiplication
+</span>
+                        <span class="cov8" title="1">continue</span>
+                }
+
+                // Stop when the next token is not a multiplication or division operator.
+                <span class="cov8" title="1">if operator != "*" &amp;&amp; operator != "/" </span>{
+                        <span class="cov8" title="1">break</span>
+                }
+
+                <span class="cov8" title="1">consumeToken(tokens)
+</span>
+                <span class="cov8" title="1">nextValue, err := parsePower(tokens)
+</span>
+                <span class="cov8" title="1">if err != nil </span>{
+                        <span class="cov8" title="1">return parsedValue{}, err
+</span>                }
+
+                // Perform multiplication or division based on the operator.
+                <span class="cov8" title="1">if operator == "*" </span>{
+                        <span class="cov8" title="1">result.value *= nextValue.value
+</span>                } else {
+                        <span class="cov8" title="1">if nextValue.value == 0 </span>{
+                                <span class="cov8" title="1">return parsedValue{}, ErrDivisionByZero
+</span>                        }
+
+                        <span class="cov8" title="1">result.value /= nextValue.value</span>
+                }
+
+                <span class="cov8" title="1">result.isPercentage = false</span>
+        }
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// parsePower parses a power operation in the expression, handling exponentiation.
+func parsePower(tokens *[]string) (parsedValue, error) {
+        <span class="cov8" title="1">result, err := parseNumber(tokens) // Parse the next number in the expression.
+        if err != nil </span>{
+                <span class="cov8" title="1">return parsedValue{}, err
+</span>        }
+
+        <span class="cov8" title="1">for len(*tokens) &gt; 0 &amp;&amp; (*tokens)[0] == "^" </span>{
+                <span class="cov8" title="1">consumeToken(tokens)
+</span>
+                <span class="cov8" title="1">exponent, err := parseNumber(tokens)
+</span>
+                <span class="cov8" title="1">if err != nil </span>{
+                        <span class="cov8" title="1">return parsedValue{}, err
+</span>                }
+
+                <span class="cov8" title="1">result.value = math.Pow(result.value, exponent.value)
+                result.isPercentage = false</span>
+        }
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// parseNumber parses a number or a sub-expression in the expression, handling square roots and parentheses.
+func parseNumber(tokens *[]string) (parsedValue, error) {
+
+        // If there are no tokens left, return an invalid expression error.
+        <span class="cov8" title="1">if len(*tokens) == 0 </span>{
+                <span class="cov8" title="1">return parsedValue{}, ErrInvalidExpression
+</span>        }
+
+        <span class="cov8" title="1">token := consumeToken(tokens)
+</span>
+        // If the token is an operator, return an unexpected operator error.
+        <span class="cov8" title="1">if token == "+" || token == "-" || token == "*" || token == "/" || token == "^" </span>{
+                <span class="cov8" title="1">return parsedValue{}, ErrUnexpectedOperator
+</span>        }
+
+        // Handle square root operation
+        <span class="cov8" title="1">if token == "√" </span>{
+                <span class="cov8" title="1">operand, err := parseNumber(tokens)
+                if err != nil </span>{
+                        <span class="cov8" title="1">return parsedValue{}, err
+</span>                }
+
+                // If the operand is negative, return an error for negative square root.
+                <span class="cov8" title="1">if operand.value &lt; 0 </span>{
+                        <span class="cov8" title="1">return parsedValue{}, ErrNegativeSquareRoot
+</span>                }
+
+                <span class="cov8" title="1">return parsedValue{
+                        value:                        math.Sqrt(operand.value),
+                        isPercentage:                 false,
+                        allowsImplicitMultiplication: true,
+                }, nil</span>
+        }
+
+        // Handle parentheses
+        <span class="cov8" title="1">if token == "(" </span>{
+                <span class="cov8" title="1">result, err := parseExpression(tokens)
+</span>
+                <span class="cov8" title="1">if err != nil </span>{
+                        <span class="cov8" title="1">return parsedValue{}, err
+</span>                }
+
+                // If there are no tokens left after parsing, return a missing closing parenthesis error.
+                <span class="cov8" title="1">if len(*tokens) == 0 </span>{
+                        <span class="cov8" title="1">return parsedValue{}, ErrMissingClosingParenthesis
+</span>                }
+
+                <span class="cov8" title="1">consumeToken(tokens)
+</span>
+                // If the next token is a percentage sign, consume it and return the result as a percentage.
+                <span class="cov8" title="1">if len(*tokens) &gt; 0 &amp;&amp; (*tokens)[0] == "%" </span>{
+                        <span class="cov8" title="1">consumeToken(tokens)
+</span>
+                        <span class="cov8" title="1">return parsedValue{
+                                value:        result.value / 100,
+                                isPercentage: true,
+                        }, nil
+</span>                }
+
+                <span class="cov8" title="1">result.allowsImplicitMultiplication = true
+</span>
+                <span class="cov8" title="1">return result, nil</span>
+        }
+
+        <span class="cov8" title="1">value, err := strconv.ParseFloat(token, 64) // Parse the token as a float64 value.
+</span>
+        // If there was an error during parsing, return an invalid number error.
+        <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">return parsedValue{}, ErrInvalidNumber
+</span>        }
+
+        // Handle percentage
+        <span class="cov8" title="1">if len(*tokens) &gt; 0 &amp;&amp; (*tokens)[0] == "%" </span>{
+                <span class="cov8" title="1">consumeToken(tokens)
+</span>
+                <span class="cov8" title="1">return parsedValue{
+                        value:        value / 100,
+                        isPercentage: true,
+                }, nil
+</span>        }
+
+        <span class="cov8" title="1">return parsedValue{
+                value:        value,
+                isPercentage: false,
+        }, nil</span>
+}
+
+// isNumber checks if a given token can be parsed as a number (float64).
+func isNumber(token string) bool {
+        <span class="cov8" title="1">_, err := strconv.ParseFloat(token, 64)
+        return err == nil
+</span>}
+
+// consumeToken removes and returns the first token from the slice of tokens.
+func consumeToken(tokens *[]string) string {
+        <span class="cov8" title="1">token := (*tokens)[0]
+        *tokens = (*tokens)[1:]
+        return token
+</span>}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package http
+
+import (
+        "encoding/json"
+        "errors"
+        "net/http"
+
+        "github.com/Jcoll05/full-stack-calculator/backend/internal/domain"
+)
+
+// Calculator defines the calculation behavior required by the HTTP handler.
+// Implementations receive a complete mathematical expression and return its result.
+type Calculator interface {
+        Calculate(expression string) (float64, error)
+}
+
+// CalculatorHandler handles HTTP requests for mathematical expression evaluation.
+type CalculatorHandler struct {
+        service Calculator
+}
+
+// NewCalculatorHandler creates a new CalculatorHandler with the provided calculator service.
+func NewCalculatorHandler(service Calculator) *CalculatorHandler {
+        <span class="cov8" title="1">return &amp;CalculatorHandler{
+                service: service,
+</span>        }
+}
+
+// calculateRequest represents the expected JSON structure for a calculation request.
+type calculateRequest struct {
+        Expression string `json:"expression"`
+}
+
+// calculateResponse represents the JSON structure for a successful calculation response.
+type calculateResponse struct {
+        Result float64 `json:"result"`
+}
+
+// errorResponse represents the JSON structure for an error response.
+type errorResponse struct {
+        Error string `json:"error"`
+}
+
+// Calculate handles HTTP requests for evaluating mathematical expressions.
+func (h *CalculatorHandler) Calculate(w http.ResponseWriter, r *http.Request) {
+
+        // Reject unsupported HTTP methods.
+        <span class="cov8" title="1">if r.Method != http.MethodPost </span>{
+                <span class="cov8" title="1">w.Header().Set("Allow", http.MethodPost)
+                writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+                return
+</span>        }
+
+        <span class="cov8" title="1">var request calculateRequest
+</span>
+        // Decode the JSON request body into the calculateRequest struct.
+        <span class="cov8" title="1">if err := json.NewDecoder(r.Body).Decode(&amp;request); err != nil </span>{
+                <span class="cov8" title="1">writeError(w, http.StatusBadRequest, "invalid request body")
+                return
+</span>        }
+
+        // Reject requests without an expression.
+        <span class="cov8" title="1">if request.Expression == "" </span>{
+                <span class="cov8" title="1">writeError(w, http.StatusBadRequest, "expression is required")
+                return
+</span>        }
+
+        // Evaluate the expression through the calculator service.
+        <span class="cov8" title="1">result, err := h.service.Calculate(request.Expression)
+</span>
+        // Handle errors and send appropriate HTTP responses.
+        <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">switch </span>{
+                case errors.Is(err, domain.ErrDivisionByZero),
+                        errors.Is(err, domain.ErrNegativeSquareRoot),
+                        errors.Is(err, domain.ErrInvalidExpression),
+                        errors.Is(err, domain.ErrMissingClosingParenthesis),
+                        errors.Is(err, domain.ErrUnexpectedOperator),
+                        errors.Is(err, domain.ErrInvalidNumber):
+                        <span class="cov8" title="1">writeError(w, http.StatusBadRequest, err.Error())</span>
+
+                default:
+                        <span class="cov8" title="1">writeError(w, http.StatusInternalServerError, "internal server error")</span>
+                }
+
+                <span class="cov8" title="1">return</span>
+        }
+
+        // Return the calculated result.
+        <span class="cov8" title="1">writeJSON(w, http.StatusOK, calculateResponse{
+                Result: result,
+        })</span>
+}
+
+// writeJSON sends a JSON response with the specified status code and data.
+func writeJSON(w http.ResponseWriter, status int, data any) {
+        <span class="cov8" title="1">w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(status)
+</span>
+        <span class="cov8" title="1">_ = json.NewEncoder(w).Encode(data)
+</span>}
+
+// writeError sends a JSON error response with the specified status code and error message.
+func writeError(w http.ResponseWriter, status int, message string) {
+        <span class="cov8" title="1">writeJSON(w, status, errorResponse{
+                Error: message,
+        })
+</span>}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package http
+
+import "net/http"
+
+// corsMiddleware is a middleware function that adds CORS headers to the HTTP response.
+func corsMiddleware(next http.Handler) http.Handler {
+        // Return a new handler that wraps the next handler and adds CORS headers.
+        <span class="cov8" title="1">return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span>{
+                <span class="cov8" title="1">w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+                w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+                w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+</span>
+                // Handle preflight requests by responding with a 204 No Content status.
+                <span class="cov8" title="1">if r.Method == http.MethodOptions </span>{
+                        <span class="cov8" title="1">w.WriteHeader(http.StatusNoContent)
+                        return
+</span>                }
+
+                // Call the next handler in the chain.
+                <span class="cov8" title="1">next.ServeHTTP(w, r)</span>
+        })
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package http
+
+import "net/http"
+
+// NewRouter creates and configures the HTTP router for the calculator API.
+func NewRouter(handler *CalculatorHandler) http.Handler {
+        // Create a new ServeMux to handle incoming HTTP requests.
+        <span class="cov8" title="1">mux := http.NewServeMux()
+</span>
+        // Register the Calculate handler for the /api/v1/calculate endpoint.
+        <span class="cov8" title="1">mux.HandleFunc("/api/v1/calculate", handler.Calculate)
+</span>
+        // Wrap the router with CORS middleware.
+        <span class="cov8" title="1">return corsMiddleware(mux)
+</span>}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

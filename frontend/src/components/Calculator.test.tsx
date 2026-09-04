@@ -113,4 +113,146 @@ describe('Calculator', () => {
             screen.getByText('8.5', { selector: '.display-value' }),
         ).toBeInTheDocument()
     })
+
+    it('builds a square root expression', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '√' }))
+        await user.click(screen.getByRole('button', { name: '2' }))
+        await user.click(screen.getByRole('button', { name: '5' }))
+
+        expect(
+            screen.getByText('√ 25', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('builds a percentage expression', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '1' }))
+        await user.click(screen.getByRole('button', { name: '0' }))
+        await user.click(screen.getByRole('button', { name: '0' }))
+        await user.click(screen.getByRole('button', { name: '%' }))
+
+        expect(
+            screen.getByText('100%', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('builds an expression with parentheses', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '(' }))
+        await user.click(screen.getByRole('button', { name: '2' }))
+        await user.click(screen.getByRole('button', { name: '+' }))
+        await user.click(screen.getByRole('button', { name: '2' }))
+        await user.click(screen.getByRole('button', { name: ')' }))
+
+        expect(
+            screen.getByText('(2 + 2)', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('removes an operator when backspace is pressed', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '8' }))
+        await user.click(screen.getByRole('button', { name: '+' }))
+        await user.click(screen.getByRole('button', { name: '⌫' }))
+
+        expect(
+            screen.getByText('8', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('does nothing when backspace is pressed on an empty calculator', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '⌫' }))
+
+        expect(
+            screen.getByText('0', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('replaces the leading zero when a number is entered', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '0' }))
+        await user.click(screen.getByRole('button', { name: '8' }))
+
+        expect(
+            screen.getByText('8', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+
+        expect(
+            screen.queryByText('08', { selector: '.display-value' }),
+        ).not.toBeInTheDocument()
+    })
+
+    it('prevents entering more than one decimal point', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '8' }))
+        await user.click(screen.getByRole('button', { name: '.' }))
+        await user.click(screen.getByRole('button', { name: '5' }))
+        await user.click(screen.getByRole('button', { name: '.' }))
+
+        expect(
+            screen.getByText('8.5', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('builds expressions with subtraction, multiplication, and power operators', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: '8' }))
+        await user.click(screen.getByRole('button', { name: '−' }))
+        await user.click(screen.getByRole('button', { name: '5' }))
+
+        expect(
+            screen.getByText('8 − 5', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+
+        await user.click(screen.getByRole('button', { name: '×' }))
+        await user.click(screen.getByRole('button', { name: '2' }))
+
+        expect(
+            screen.getByText('8 − 5 × 2', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+
+        await user.click(screen.getByRole('button', { name: 'xʸ' }))
+
+        expect(
+            screen.getByText('8 − 5 × 2 ^', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
+
+    it('does nothing when closing parenthesis has no matching opening parenthesis', async () => {
+        const user = userEvent.setup()
+
+        render(<Calculator />)
+
+        await user.click(screen.getByRole('button', { name: ')' }))
+
+        expect(
+            screen.getByText('0', { selector: '.display-value' }),
+        ).toBeInTheDocument()
+    })
 })
